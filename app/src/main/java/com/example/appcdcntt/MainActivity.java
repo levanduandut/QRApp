@@ -1,7 +1,6 @@
 package com.example.appcdcntt;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 
 import java.io.Console;
