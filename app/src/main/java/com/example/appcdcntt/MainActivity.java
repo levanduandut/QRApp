@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.journeyapps.barcodescanner.CaptureActivity;
 import com.journeyapps.barcodescanner.ScanContract;
@@ -21,40 +22,28 @@ import com.journeyapps.barcodescanner.ScanOptions;
 
 import java.util.UUID;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-//    Socket mSocket;
     private AppCompatButton btnVaoLink;
     private AppCompatButton btnGuiBien;
     private AppCompatButton btnCam;
 
     private EditText edtBienSo;
     private TextView tvBienSo;
-
-//    {
-//        try {
-//            mSocket = IO.socket("http://192.168.1.4:3000");
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
-//    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        mSocket.connect();
         AnhXa();
         btnCam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ScanCode();
-//                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                try {
-//                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-//                } catch (ActivityNotFoundException e) {
-//                    // display error state to the user
-//                }
-
             }
         });
         btnGuiBien.setOnClickListener(new View.OnClickListener() {
@@ -63,7 +52,31 @@ public class MainActivity extends AppCompatActivity {
                 String id = UUID.randomUUID().toString();
                 String ipServer = "https://www.youtube.com";
                 String jwtToken = "/watch?v=mthXfqjmB6A" ;
-                tvBienSo.setText(ipServer + jwtToken);
+                tvBienSo.setText(id);
+
+                String token = id;
+                String bienSo = edtBienSo.getText().toString();
+
+                //
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://reqres.in/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                SImpleApi retrofitAPI = retrofit.create(SImpleApi.class);
+                PostBienSo modal = new PostBienSo(token, bienSo);
+                Call<PostBienSo> call = retrofitAPI.createPost(modal);
+                call.enqueue(new Callback<PostBienSo>() {
+                    @Override
+                    public void onResponse(Call<PostBienSo> call, Response<PostBienSo> response) {
+                        // this method is called when we get response from our api.
+                        Toast.makeText(MainActivity.this, "Data added to API", Toast.LENGTH_SHORT).show();
+                        PostBienSo responseFromAPI = response.body();
+                    }
+                    @Override
+                    public void onFailure(Call<PostBienSo> call, Throwable t) {
+                    }
+                });
+                edtBienSo.setText("");
             }
         });
         btnVaoLink.setOnClickListener(view -> {
@@ -112,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
                     dialogInterface.dismiss();
                 }
             }).show();
-
         }
     });
 }
